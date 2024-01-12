@@ -73,7 +73,9 @@ func (builder *DefaultUserSecretBuilder) Build() (client.Object, error) {
 			"host":              []byte(builder.Instance.ServiceSubDomain()),
 		},
 	}
+
 	builder.updatePorts(secret)
+	builder.updateUrl(secret)
 
 	return secret, nil
 }
@@ -143,6 +145,17 @@ func (builder *DefaultUserSecretBuilder) updatePorts(secret *corev1.Secret) {
 			}
 		}
 	}
+}
+
+func (builder *DefaultUserSecretBuilder) updateUrl(secret *corev1.Secret) {
+	var username string = string(secret.Data["username"])
+	var password string = string(secret.Data["password"])
+	var host string = string(secret.Data["host"])
+	var port string = string(secret.Data["port"])
+
+	url := fmt.Sprintf("amqp://%s:%s@%s:%s", username, password, host, port)
+
+	secret.Data["url"] = []byte(url)
 }
 
 // generateUsername returns a base64 string that has "default_user_" as prefix
